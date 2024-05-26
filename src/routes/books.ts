@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { getBooksByTitle } from "../handlers/books";
+import { queryBooks, queryBookById } from "../handlers/books";
 const router = Router();
-const titlePrefix = "/title";
+const volumes = "/volumes/:query";
+const id = "/:id";
 
-router.get(titlePrefix, getBooksByTitle);
+router.get(volumes, queryBooks);
+router.get(id, queryBookById);
 
 export default router;

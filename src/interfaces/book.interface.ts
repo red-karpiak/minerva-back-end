@@ -1,15 +1,20 @@
 export interface Book {
-  isbn: string[];
+  id: string;
   title: string;
-  image: string;
-  synopsis: string;
-  author: string;
-  notes: string;
-  publisher: string;
-  publicationDate: Date;
+  thumbnail?: string;
+  authors: string;
 }
 
 export interface BookDetails {
-    thumbnail_url?: string;
-    
+  id: string;
+  title: string;
+  subtitle: string;
+  image?: string;
+  authors: string;
+  categories: string[];
+  publisher: string;
+  publishedDate: Date;
+  description: string;
+  pageCount: number;
+  language: string;
 }
