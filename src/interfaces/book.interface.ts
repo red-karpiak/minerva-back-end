@@ -18,3 +18,18 @@ export interface BookDetails {
   pageCount: number;
   language: string;
 }
+
+export interface GoogleBook {
+  id: string;
+  volumeInfo: VolumeInfo;
+}
+
+interface ImageLinks {
+  smallThumbnail: string;
+}
+
+interface VolumeInfo {
+  title: string;
+  authors: string[];
+  imageLinks: ImageLinks;
+}

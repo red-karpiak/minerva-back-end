@@ -2,6 +2,8 @@ import { Request, Response } from "express-serve-static-core";
 import axios from "axios";
 import { Book, BookDetails } from "../interfaces/book.interface";
 
+const googleUri = "https://www.googleapis.com/books/v1/volumes";
+
 export async function queryBooks(request: Request, response: Response) {
   const query: string = request.params.query;
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
@@ -14,7 +16,7 @@ export async function queryBooks(request: Request, response: Response) {
     throw new Error("Query parameter is missing or empty");
   }
 
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+  const url = `${googleUri}?q=${encodeURIComponent(
     query
   )}&key=${apiKey}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`;
 
@@ -66,7 +68,7 @@ export async function queryBookById(request: Request, response: Response) {
   if (!id) {
     throw new Error("Id parameter is missing or empty");
   }
-  const url = `https://www.googleapis.com/books/v1/volumes/${id}?projection=full&key=${apiKey}&fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)`;
+  const url = `${googleUri}/${id}?projection=full&key=${apiKey}&fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)`;
   try {
     await axios
       .get(url)
