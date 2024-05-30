@@ -10,18 +10,16 @@ const googleUri = "https://www.googleapis.com/books/v1/volumes";
 describe("GET /api/books/volumes/:query", () => {
   let mock: MockAdapter;
 
-  beforeAll(() => {
+  beforeEach(() => {
     mock = new MockAdapter(axios);
     process.env.GOOGLE_BOOKS_API_KEY = "testApiKey";
   });
 
-  afterAll(() => {
+  afterEach(() => {
     mock.restore();
   });
 
   it("should return a list of books", async () => {
-    const mockBookData: GoogleBook[] = mockBooks;
-
     mock
       .onGet(
         `${googleUri}?q=Harry%20Potter&key=${process.env.GOOGLE_BOOKS_API_KEY}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`
@@ -45,25 +43,33 @@ describe("GET /api/books/volumes/:query", () => {
     );
   });
 
-  // it("should handle errors when API key is missing", async () => {
-  //   delete process.env.GOOGLE_BOOKS_API_KEY;
+  it("should handle errors when API key is missing", async () => {
+    delete process.env.GOOGLE_BOOKS_API_KEY;
 
-  //   const response = await request(app).get(
-  //     "/api/books/volumes/Harry%20Potter"
-  //   );
+    const response = await request(app).get(
+      "/api/books/volumes/Harry%20Potter"
+    );
 
-  //   expect(response.status).toBe(500);
-  //   expect(response.text).toBe("Google Books API key is missing");
+    expect(response.status).toBe(500);
+    expect(response.text).toContain("Google Books API key is missing");
 
-  //   process.env.GOOGLE_BOOKS_API_KEY = "testApiKey"; // Restore test API key
-  // });
+    process.env.GOOGLE_BOOKS_API_KEY = "testApiKey"; // Restore dummy API key
+  });
 
-  // it("should handle errors when query parameter is missing", async () => {
-  //   const response = await request(app).get("/api/books/volumes/");
+  it("should handle errors when query parameter is missing", async () => {
+    const response = await request(app).get("/api/books/volumes/");
 
-  //   expect(response.status).toBe(404); // Express catches this as a missing route
-  // });
+    expect(response.status).toBe(500);
+  });
 
+  it("should handle errors when query parameter is too short", async () => {
+    const response = await request(app).get("/api/books/volumes/abc");
+
+    expect(response.status).toBe(400);
+    expect(response.text).toContain(
+      "Query must be at least five characters long."
+    );
+  });
   // it("should handle API errors gracefully", async () => {
   //   mock
   //     .onGet(

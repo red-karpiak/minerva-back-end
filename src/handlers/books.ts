@@ -8,14 +8,6 @@ export async function queryBooks(request: Request, response: Response) {
   const query: string = request.params.query;
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
 
-  if (!apiKey) {
-    throw new Error("Google Books API key is missing");
-  }
-
-  if (!query) {
-    throw new Error("Query parameter is missing or empty");
-  }
-
   const url = `${googleUri}?q=${encodeURIComponent(
     query
   )}&key=${apiKey}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`;

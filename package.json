@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --detectOpenHandles --forceExit",
     "test:handlers": "jest --testPathPattern=src/__tests__/handlers",
     "test:e2e": "jest --testPathPattern=src/__tests__/e2e",
     "build": "tsc --build",
