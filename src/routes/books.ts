@@ -6,9 +6,9 @@ import {
   validateQueryLength,
 } from "../middleware/validationMiddleware";
 
-const router = Router();
-const volumes = "/volumes/:query";
-const id = "/:id";
+const router: Router = Router();
+const volumes: string = "/volumes";
+const id: string = `${volumes}/:id`;
 
 router.get(
   volumes,

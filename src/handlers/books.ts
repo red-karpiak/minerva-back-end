@@ -5,7 +5,7 @@ import { Book, BookDetails } from "../interfaces/book.interface";
 const googleUri = "https://www.googleapis.com/books/v1/volumes";
 
 export async function queryBooks(request: Request, response: Response) {
-  const query: string = request.params.query;
+  const query: string = request.query.q!.toString();
   const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
 
   const url = `${googleUri}?q=${encodeURIComponent(

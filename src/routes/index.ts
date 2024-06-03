@@ -1,9 +1,9 @@
 import { Router } from "express";
 import bookRouter from "./books";
 
-const router = Router();
-const apiPrefix = "/api";
-const booksPrefix = "/books";
+const router: Router = Router();
+const apiPrefix: string = "/api";
+const booksPrefix: string = "/books";
 
 router.use(`${apiPrefix}${booksPrefix}`, bookRouter);
 

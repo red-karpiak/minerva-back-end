@@ -19,7 +19,7 @@ export function validateQueryParam(
   res: Response,
   next: NextFunction
 ) {
-  const query = req.params.query;
+  const query: string = req.query.q!.toString();
   if (!query) {
     return next(new Error("Query parameter is missing or empty."));
   }
@@ -32,8 +32,8 @@ export function validateQueryLength(
   res: Response,
   next: NextFunction
 ) {
-  const query = req.params.query;
-  if (query.trim().length < 5) {
+  const query: string = req.query.q!.toString();
+  if (!query || query.trim().length < 5) {
     return next(new Error("Query must be at least five characters long."));
   }
   next();

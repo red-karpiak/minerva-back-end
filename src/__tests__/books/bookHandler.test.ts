@@ -3,16 +3,16 @@ import axios from "axios";
 import MockAdapter from "axios-mock-adapter";
 import { createApp } from "../../createApp";
 import mockBooks from "../mockData/bookMockData";
-import { GoogleBook } from "../../interfaces/book.interface";
 
 const app = createApp();
 const googleUri = "https://www.googleapis.com/books/v1/volumes";
-describe("GET /api/books/volumes/:query", () => {
+const testApiKey = "testApiKey";
+describe("GET /api/books/volumes", () => {
   let mock: MockAdapter;
 
   beforeEach(() => {
     mock = new MockAdapter(axios);
-    process.env.GOOGLE_BOOKS_API_KEY = "testApiKey";
+    process.env.GOOGLE_BOOKS_API_KEY = testApiKey;
   });
 
   afterEach(() => {
@@ -22,14 +22,14 @@ describe("GET /api/books/volumes/:query", () => {
   it("should return a list of books", async () => {
     mock
       .onGet(
-        `${googleUri}?q=Harry%20Potter&key=${process.env.GOOGLE_BOOKS_API_KEY}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`
+        `${googleUri}?q=Harry%20Potter&key=${testApiKey}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`
       )
       .reply(200, {
         items: mockBooks,
       });
 
     const response = await request(app).get(
-      "/api/books/volumes/Harry%20Potter"
+      "/api/books/volumes?q=Harry%20Potter"
     );
 
     expect(response.status).toBe(200);
@@ -47,7 +47,7 @@ describe("GET /api/books/volumes/:query", () => {
     delete process.env.GOOGLE_BOOKS_API_KEY;
 
     const response = await request(app).get(
-      "/api/books/volumes/Harry%20Potter"
+      "/api/books/volumes?q=Harry%20Potter"
     );
 
     expect(response.status).toBe(500);
@@ -57,31 +57,31 @@ describe("GET /api/books/volumes/:query", () => {
   });
 
   it("should handle errors when query parameter is missing", async () => {
-    const response = await request(app).get("/api/books/volumes/");
+    const response = await request(app).get("/api/books/volumes");
 
     expect(response.status).toBe(500);
   });
 
   it("should handle errors when query parameter is too short", async () => {
-    const response = await request(app).get("/api/books/volumes/abc");
+    const response = await request(app).get("/api/books/volumes?q=abc");
 
     expect(response.status).toBe(400);
     expect(response.text).toContain(
       "Query must be at least five characters long."
     );
   });
-  // it("should handle API errors gracefully", async () => {
-  //   mock
-  //     .onGet(
-  //       "https://www.googleapis.com/books/v1/volumes?q=Harry%20Potter&key=testApiKey&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))"
-  //     )
-  //     .reply(500);
+  it("should handle API errors gracefully", async () => {
+    mock
+      .onGet(
+        `${googleUri}?q=Harry%20Potter&key=${testApiKey}&maxResults=40&fields=items(id,volumeInfo(title,authors,imageLinks))`
+      )
+      .reply(500);
 
-  //   const response = await request(app).get(
-  //     "/api/books/volumes/Harry%20Potter"
-  //   );
+    const response = await request(app).get(
+      "/api/books/volumes?q=Harry%20Potter"
+    );
 
-  //   expect(response.status).toBe(500);
-  //   expect(response.text).toBe("An error occurred while fetching book details");
-  // });
+    expect(response.status).toBe(500);
+    expect(response.text).toBe("An error occurred while fetching book details");
+  });
 });
