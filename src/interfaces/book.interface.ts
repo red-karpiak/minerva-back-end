@@ -11,7 +11,7 @@ export interface BookDetails {
   subtitle: string;
   image?: string;
   authors: string;
-  categories: string[];
+  categories: string;
   publisher: string;
   publishedDate: Date;
   description: string;
@@ -32,4 +32,11 @@ interface VolumeInfo {
   title: string;
   authors: string[];
   imageLinks: ImageLinks;
+  subtitle?: String;
+  description?: String;
+  publisher?: String;
+  publishedDate?: Date;
+  pageCount?: Number;
+  language?: String;
+  categories?: string[];
 }

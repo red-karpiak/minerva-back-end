@@ -1,6 +1,7 @@
 import { Request, Response } from "express-serve-static-core";
 import axios from "axios";
 import { Book, BookDetails } from "../interfaces/book.interface";
+import { GetBookDetails, GetBookMinimal } from "../utilities/bookUtils";
 
 const googleUri = "https://www.googleapis.com/books/v1/volumes";
 
@@ -17,18 +18,14 @@ export async function queryBooks(request: Request, response: Response) {
       .get(url)
       .then((res) => {
         const books: Book[] = res.data.items.map((item: any): Book => {
-          const volumeInfo = item.volumeInfo;
-          const book: Book = {
-            id: item.id,
-            title: volumeInfo.title || "No title available",
-            thumbnail: volumeInfo.imageLinks
-              ? volumeInfo.imageLinks.smallThumbnail
-              : "",
-            authors: volumeInfo.authors
-              ? volumeInfo.authors.join(", ")
-              : "No authors available",
-          };
-          return book;
+          const bookMinimal: Book | null = GetBookMinimal(
+            item.id,
+            item.volumeInfo
+          );
+          if (!bookMinimal) {
+            response.status(500).send("Unable to retrieve book");
+          }
+          return bookMinimal as Book;
         });
 
         if (books.length === 0)
@@ -51,7 +48,10 @@ export async function queryBooks(request: Request, response: Response) {
 }
 export async function queryBookById(request: Request, response: Response) {
   const id: string = request.params.id;
-  const apiKey = process.env.GOOGLE_BOOKS_API_KEY;
+  const apiKey: string = process.env.GOOGLE_BOOKS_API_KEY as string;
+  let queryFields =
+    "fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)";
+  let minimal: Boolean = false;
 
   if (!apiKey) {
     throw new Error("Google Books API key is missing");
@@ -60,36 +60,35 @@ export async function queryBookById(request: Request, response: Response) {
   if (!id) {
     throw new Error("Id parameter is missing or empty");
   }
-  const url = `${googleUri}/${id}?projection=full&key=${apiKey}&fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)`;
+
+  if (request.params.minimal) {
+    minimal = (request.params.minimal as string).toLowerCase() === "true";
+    queryFields = "fields=items(id,volumeInfo(title,authors,imageLinks))";
+  }
+  const url = `${googleUri}/${id}?projection=full&key=${apiKey}&${queryFields}`;
   try {
     await axios
       .get(url)
       .then((res) => {
-        const volumeInfo = res.data.volumeInfo;
-        const book: BookDetails = {
-          id: id,
-          title: volumeInfo.title || "No title available",
-          subtitle: volumeInfo.subtitle || "No title available",
-          image: volumeInfo.imageLinks ? volumeInfo.imageLinks.small : "",
-          description: volumeInfo.description || "No description available",
-          authors: volumeInfo.authors
-            ? volumeInfo.authors.join(", ")
-            : "No authors available",
-          publisher: volumeInfo.publisher || "No publisher available",
-          publishedDate: volumeInfo.publishedDate
-            ? new Date(volumeInfo.publishedDate)
-            : new Date(),
-          pageCount: volumeInfo.pageCount || 0,
-          language: volumeInfo.language || "No language available",
-          categories: volumeInfo.categories
-            ? volumeInfo.categories.join(", ")
-            : "No categories available",
-        };
+        const item = res.data.items;
+        if (!item || item.length === 0) {
+          response.status(404).send(`Unable to find book with id "${id}"`);
+        }
 
-        if (!book)
+        const volumeInfo = item.volumeInfo;
+
+        if (minimal) {
+          const bookMinimal = GetBookMinimal(id, volumeInfo);
+          if (!bookMinimal)
+            response.status(404).send(`Unable to find book with id "${id}"`);
+          response.status(200).send(bookMinimal);
+        }
+
+        const bookDetails = GetBookDetails(id, volumeInfo);
+        if (!bookDetails)
           response.status(404).send(`Unable to find book with id "${id}"`);
 
-        response.status(200).send(book);
+        response.status(200).send(bookDetails);
       })
       .catch((error) => {
         console.error("Error:", error);

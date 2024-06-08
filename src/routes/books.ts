@@ -9,7 +9,7 @@ import {
 const router: Router = Router();
 const volumes: string = "/volumes";
 const id: string = `${volumes}/:id`;
-
+const minimal: string = `${id}/:minimal`;
 router.get(
   volumes,
   validateApiKey,
@@ -18,5 +18,5 @@ router.get(
   queryBooks
 );
 router.get(id, queryBookById);
-
+router.get(minimal, validateApiKey, queryBookById);
 export default router;
