@@ -4,11 +4,10 @@ import MockAdapter from "axios-mock-adapter";
 import { createApp } from "../../createApp";
 import {
   mockGoogleBooks,
-  mockBookDetails,
+  mockGoogleBook,
   mockGoogleBookDetails,
 } from "../mockData/bookMockData";
 import { GoogleBook } from "../../interfaces/book.interface";
-import { GetBookDetails, GetBookMinimal } from "../../utilities/bookUtils";
 
 const app = createApp();
 const googleUri = "https://www.googleapis.com/books/v1/volumes";
@@ -44,7 +43,7 @@ describe("GET /api/books/volumes", () => {
         id: book.id,
         title: book.volumeInfo.title,
         authors: book.volumeInfo.authors.join(", "),
-        thumbnail: book.volumeInfo.imageLinks.smallThumbnail,
+        image: book.volumeInfo.imageLinks.smallThumbnail,
       }))
     );
   });
@@ -131,61 +130,85 @@ describe("GET /api/books/volumes/:id", () => {
       categories: mockGoogleBookDetails.volumeInfo.categories?.join(", "),
     });
   });
-});
 
-describe("GetBookDetails Tests", () => {
-  it("should return the book details", () => {
-    const result = GetBookDetails(
-      mockGoogleBookDetails.id,
-      mockGoogleBookDetails.volumeInfo
-    );
-    expect(result).toEqual({
-      id: mockGoogleBookDetails.id,
-      title: mockGoogleBookDetails.volumeInfo.title,
-      subtitle: mockGoogleBookDetails.volumeInfo.subtitle,
-      description: mockGoogleBookDetails.volumeInfo.description,
-      authors: mockGoogleBookDetails.volumeInfo.authors.join(", "),
-      image: mockGoogleBookDetails.volumeInfo.imageLinks.smallThumbnail,
-      publisher: mockGoogleBookDetails.volumeInfo.publisher,
-      publishedDate: mockGoogleBookDetails.volumeInfo.publishedDate,
-      pageCount: mockGoogleBookDetails.volumeInfo.pageCount,
-      language: mockGoogleBookDetails.volumeInfo.language,
-      categories: mockGoogleBookDetails.volumeInfo.categories?.join(", "),
-    });
+  it("should handle errors when API key is missing", async () => {
+    delete process.env.GOOGLE_BOOKS_API_KEY;
+
+    const response = await request(app).get("/api/books/volumes/4");
+
+    expect(response.status).toBe(500);
+    expect(response.text).toContain("Google Books API key is missing");
+
+    process.env.GOOGLE_BOOKS_API_KEY = "testApiKey"; // Restore dummy API key
   });
 
-  it("should return null when id is missing", () => {
-    const result = GetBookDetails("", mockGoogleBookDetails.volumeInfo);
-    expect(result).toBeNull();
-  });
+  it("should handle API errors gracefully", async () => {
+    mock
+      .onGet(
+        `${googleUri}/${id}?projection=full&key=${testApiKey}&fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)`
+      )
+      .reply(500);
 
-  it("should return null when volumeInfo is missing", () => {
-    const result = GetBookDetails(mockGoogleBookDetails.id, null);
-    expect(result).toBeNull();
+    const response = await request(app).get(`/api/books/volumes/${id}`);
+
+    expect(response.status).toBe(500);
+    expect(response.text).toBe("An error occurred while fetching book details");
   });
 });
 
-describe("GetBookMinimal Tests", () => {
-  it("should return the book details", () => {
-    const result = GetBookMinimal(
-      mockGoogleBookDetails.id,
-      mockGoogleBookDetails.volumeInfo
-    );
-    expect(result).toEqual({
-      id: mockGoogleBookDetails.id,
-      title: mockGoogleBookDetails.volumeInfo.title,
-      authors: mockGoogleBookDetails.volumeInfo.authors.join(", "),
-      thumbnail: mockGoogleBookDetails.volumeInfo.imageLinks.smallThumbnail,
+describe("GET /api/books/volumes/:id/true", () => {
+  let mock: MockAdapter;
+  const id: Number = 1;
+  beforeEach(() => {
+    mock = new MockAdapter(axios);
+    process.env.GOOGLE_BOOKS_API_KEY = testApiKey;
+  });
+
+  afterEach(() => {
+    mock.restore();
+  });
+
+  it("should the minimal book details with the specified id", async () => {
+    mock
+      .onGet(
+        `${googleUri}/${id}?projection=full&key=${testApiKey}&fields=volumeInfo(title,authors,imageLinks)`
+      )
+      .reply(200, {
+        items: mockGoogleBook,
+      });
+
+    const response = await request(app).get(`/api/books/volumes/${id}/true`);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      id: mockGoogleBook.id,
+      title: mockGoogleBook.volumeInfo.title,
+      authors: mockGoogleBook.volumeInfo.authors.join(", "),
+      image: mockGoogleBook.volumeInfo.imageLinks.smallThumbnail,
     });
   });
 
-  it("should return null when id is missing", () => {
-    const result = GetBookMinimal("", mockGoogleBookDetails.volumeInfo);
-    expect(result).toBeNull();
+  it("should handle errors when API key is missing", async () => {
+    delete process.env.GOOGLE_BOOKS_API_KEY;
+
+    const response = await request(app).get("/api/books/volumes/4/true");
+
+    expect(response.status).toBe(500);
+    expect(response.text).toContain("Google Books API key is missing");
+
+    process.env.GOOGLE_BOOKS_API_KEY = "testApiKey"; // Restore dummy API key
   });
 
-  it("should return null when volumeInfo is missing", () => {
-    const result = GetBookMinimal(mockGoogleBookDetails.id, null);
-    expect(result).toBeNull();
+  it("should handle API errors gracefully", async () => {
+    mock
+      .onGet(
+        `${googleUri}/${id}?projection=full&key=${testApiKey}&fields=volumeInfo(title,authors,imageLinks)`
+      )
+      .reply(500);
+
+    const response = await request(app).get(`/api/books/volumes/${id}/true`);
+
+    expect(response.status).toBe(500);
+    expect(response.text).toBe("An error occurred while fetching book details");
   });
 });

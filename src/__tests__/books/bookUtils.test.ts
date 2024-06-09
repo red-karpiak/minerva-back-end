@@ -43,7 +43,7 @@ describe("GetBookMinimal Tests", () => {
       id: mockGoogleBookDetails.id,
       title: mockGoogleBookDetails.volumeInfo.title,
       authors: mockGoogleBookDetails.volumeInfo.authors.join(", "),
-      thumbnail: mockGoogleBookDetails.volumeInfo.imageLinks.smallThumbnail,
+      image: mockGoogleBookDetails.volumeInfo.imageLinks.smallThumbnail,
     });
   });
 

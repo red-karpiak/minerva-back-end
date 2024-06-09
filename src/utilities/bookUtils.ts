@@ -34,9 +34,7 @@ export function GetBookMinimal(id: string, volumeInfo: any): Book | null {
   const book: Book = {
     id: id,
     title: volumeInfo.title || "No title available",
-    thumbnail: volumeInfo.imageLinks
-      ? volumeInfo.imageLinks.smallThumbnail
-      : "",
+    image: volumeInfo.imageLinks ? volumeInfo.imageLinks.smallThumbnail : "",
     authors: volumeInfo.authors
       ? volumeInfo.authors.join(", ")
       : "No authors available",

@@ -17,6 +17,6 @@ router.get(
   validateQueryLength,
   queryBooks
 );
-router.get(id, queryBookById);
+router.get(id, validateApiKey, queryBookById);
 router.get(minimal, validateApiKey, queryBookById);
 export default router;

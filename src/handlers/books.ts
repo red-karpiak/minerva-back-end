@@ -63,7 +63,7 @@ export async function queryBookById(request: Request, response: Response) {
 
   if (request.params.minimal) {
     minimal = (request.params.minimal as string).toLowerCase() === "true";
-    queryFields = "fields=items(id,volumeInfo(title,authors,imageLinks))";
+    queryFields = "fields=volumeInfo(title,authors,imageLinks)";
   }
   const url = `${googleUri}/${id}?projection=full&key=${apiKey}&${queryFields}`;
   try {
