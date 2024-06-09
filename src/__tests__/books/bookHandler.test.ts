@@ -109,7 +109,7 @@ describe("GET /api/books/volumes/:id", () => {
         `${googleUri}/${id}?projection=full&key=${testApiKey}&fields=volumeInfo(title,subtitle,authors,description,publisher,publishedDate,imageLinks,pageCount,language,categories)`
       )
       .reply(200, {
-        items: mockGoogleBookDetails,
+        volumeInfo: mockGoogleBookDetails.volumeInfo,
       });
 
     const response = await request(app).get(`/api/books/volumes/${id}`);
@@ -174,7 +174,7 @@ describe("GET /api/books/volumes/:id/true", () => {
         `${googleUri}/${id}?projection=full&key=${testApiKey}&fields=volumeInfo(title,authors,imageLinks)`
       )
       .reply(200, {
-        items: mockGoogleBook,
+        volumeInfo: mockGoogleBook.volumeInfo,
       });
 
     const response = await request(app).get(`/api/books/volumes/${id}/true`);
