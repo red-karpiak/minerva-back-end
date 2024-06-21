@@ -33,7 +33,7 @@ export function validateQueryLength(
   next: NextFunction
 ) {
   const query: string = req.query.q!.toString();
-  if (!query || query.trim().length < 5) {
+  if (!query || query.trim().length < 3) {
     return next(new Error("Query must be at least five characters long."));
   }
   next();

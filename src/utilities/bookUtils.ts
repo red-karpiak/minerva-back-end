@@ -9,21 +9,17 @@ export function GetBookDetails(
   const bookDetails: BookDetails = {
     id: id,
     title: volumeInfo.title || "No title available",
-    subtitle: volumeInfo.subtitle || "No title available",
-    image: volumeInfo.imageLinks ? volumeInfo.imageLinks.smallThumbnail : "",
-    description: volumeInfo.description || "No description available",
-    authors: volumeInfo.authors
-      ? volumeInfo.authors.join(", ")
-      : "No authors available",
-    publisher: volumeInfo.publisher || "No publisher available",
+    subtitle: volumeInfo.subtitle || "",
+    image: volumeInfo.imageLinks ? volumeInfo.imageLinks.medium : "",
+    description: volumeInfo.description || "",
+    authors: volumeInfo.authors ? volumeInfo.authors.join(", ") : "",
+    publisher: volumeInfo.publisher || "",
     publishedDate: volumeInfo.publishedDate
       ? new Date(volumeInfo.publishedDate as unknown as string)
       : new Date(),
     pageCount: volumeInfo.pageCount || 0,
-    language: volumeInfo.language || "No language available",
-    categories: volumeInfo.categories
-      ? volumeInfo.categories.join(", ")
-      : "No categories available",
+    language: volumeInfo.language || "",
+    categories: volumeInfo.categories ? volumeInfo.categories.join(", ") : "",
   };
 
   return bookDetails;
